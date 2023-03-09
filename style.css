@@ -2,20 +2,20 @@ body {
   display: flex;
   width: 90vw;
   justify-content: center;
-  margin: 5vw;
+  margin: 5vmin;
 }
 .container {
   display: grid;
-  grid-template: repeat(6,1fr) / repeat(8,1fr);
+  grid-template: repeat(6,1fr) / 2fr repeat(6,1fr) 2fr;
+  height: 54vmin;
+  width: 90vmin;
 }
 .board {
   grid-area: 1 / 2 / 7 / 8;
   display: grid;
-  height: max(10rem, 80vmin);
-  width: max(10rem, 80vmin);
-  grid-template: 1fr 1fr 1fr / 1fr 1fr 1fr;
-  font-size: max(10rem, 90vmin);
-  font-family: sans-serif;
+  height: 100%;
+  width: 100%;
+  grid-template: 1fr 5px 1fr 5px 1fr / 1fr 5px 1fr 5px 1fr;
 }
 .board > div {
   height: 100%;
@@ -23,61 +23,83 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 25%;
-  margin: 0px;
+  font-size: 15vmin;
+  font-family: sans-serif;
+}
+.board > span {
+  background-color: black;
+}
+.unmarked {
+  color: white;
+  transition: color 1s;
+}
+.marked {
+  color: black;
+  transition: color 3ms;
 }
 .unmarked:hover {
   background-color: grey;
 }
 .top {
-  border-bottom: 1px solid black;
   grid-row: 1 / span 1;
 }
 .center {
-  border-top: 1px solid black;
-  border-bottom: 1px solid black;
-  grid-row: 2 / span 1;
+  grid-row: 3 / span 1;
 }
 .bottom {
-  grid-row: 3 / span 1;
-  border-top: 1px solid black;
+  grid-row: 5 / span 1;
 }
 .left {
-  border-right: 1px solid black;
   grid-column: 1 / span 1;
 }
 .middle {
-  border-left: 1px solid black;
-  border-right: 1px solid black;
-  grid-column: 2 / span 1;
+  grid-column: 3 / span 1;
 }
 .right {
-  border-left: 1px solid black;
-  grid-column: 3 / span 1;
+  grid-column: 5 / span 1;
 }
 .winX {
   background-color: greenyellow;
+  transition: background-color 300ms;
 }
 .winO {
   background-color: coral;
+  transition: background-color 300ms;
 }
 .winner {
   grid-area: 2 / 1 / 6 / 9;
   display: flex;
+  height: 100%;
   flex-direction: column;
-  font-size: 15vmin;
+  font-size: 10vmin;
   align-items: center;
   justify-content: space-evenly;
   background-color: blue;
-  border-radius: 2rem;
+  border-radius: 3vmin;
 }
 .hide {
   visibility: hidden;
   opacity: 0;
-  transition: visibility 0s linear 300ms, opacity 300ms;
+  transition: visibility 0s linear 0s, opacity 300ms;
 }
 .show {
   visibility: visible;
   opacity: 0.9;
   transition: visibility 0s linear 0s, opacity 3s;
+}
+.player,
+.computer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 2vmin;
+}
+.player {
+  grid-area: 2 / 1 / 4 / 2;
+}
+.computer {
+  grid-area: 2 / 8 / 4 / 9;
+}
+.score {
+  font-size: 16vmin;
 }
