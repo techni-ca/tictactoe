@@ -75,15 +75,19 @@ function checkForGameOver () {
     winner += checkRow(i) + checkCol(i)
   }
   if (winner !== '') {
-    winner = winner[0]
-    switch (winner) {
+    const winDiv = document.querySelector('.winner')
+    const nameDiv = winDiv.firstElementChild
+    switch (winner[0]) {
       case computerMark:
-        console.log('Computer Wins')
+        nameDiv.textContent = 'COMPUTER'
         break
       case playerMark:
-        console.log('Player Wins')
+        nameDiv.textContent = 'PLAYER'
         break
     }
+    winDiv.classList.remove('hide')
+    winDiv.classList.add('show')
+
     // make the board unreactive
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
@@ -98,7 +102,10 @@ function checkForGameOver () {
   // check for full board
   const boardFull = marks.join().length === 17
   if (boardFull) {
-    console.log('Drawn Game')
+    const winDiv = document.querySelector('.winner')
+    winDiv.firstElementChild.textContent = 'NOBODY'
+    winDiv.classList.remove('hide')
+    winDiv.classList.add('show')
   }
   return boardFull
 }
