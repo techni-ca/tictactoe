@@ -261,8 +261,7 @@ function player (name, token, enemyToken) {
     if (name === 'COMPUTER') {
       autoMove()
     } else {
-      autoMove()
-      // domInteraction.clickOn()
+      domInteraction.clickOn()
     }
   }
   return Object.assign({
