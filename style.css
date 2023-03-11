@@ -1,8 +1,14 @@
 body {
   display: flex;
+  flex-direction: column;
   width: 90vw;
   justify-content: center;
-  margin: 5vmin;
+  align-items: center;
+}
+.player {
+  height: 5vmin;
+  font-size: 3vmin;
+  font-weight: 800;
 }
 .container {
   display: grid;
@@ -29,7 +35,8 @@ body {
 .board > span {
   background-color: black;
 }
-.unmarked {
+.unmarked,
+.hoverless {
   color: white;
   transition: color 1s;
 }
@@ -58,11 +65,11 @@ body {
 .right {
   grid-column: 5 / span 1;
 }
-.winX {
+.win0 {
   background-color: greenyellow;
   transition: background-color 300ms;
 }
-.winO {
+.win1 {
   background-color: coral;
   transition: background-color 300ms;
 }
@@ -87,19 +94,27 @@ body {
   opacity: 0.9;
   transition: visibility 0s linear 0s, opacity 3s;
 }
-.player,
-.computer {
+.player0,
+.player1 {
   display: flex;
   flex-direction: column;
   align-items: center;
   font-size: 2vmin;
 }
-.player {
-  grid-area: 2 / 1 / 4 / 2;
+.player0 {
+  grid-area: 2 / 1 / 5 / 2;
 }
-.computer {
-  grid-area: 2 / 8 / 4 / 9;
+.player1 {
+  grid-area: 2 / 8 / 5 / 9;
 }
 .score {
   font-size: 16vmin;
+}
+.token {
+  font-size: 8vmin;
+  width: 10vmin;
+  height: 10vmin;
+  text-align: center;
+  border: 1px solid black;
+  border-radius: .5vmin;
 }

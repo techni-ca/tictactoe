@@ -1,5 +1,8 @@
 const domInteraction = (() => {
   const boardElement = document.querySelector('.board')
+  const tokens = ['X', 'O']
+  document.querySelector('.player0').querySelector('.token').textContent = tokens[0]
+  document.querySelector('.player1').querySelector('.token').textContent = tokens[1]
   function clickListener (event) {
     const classList = event.target.classList
     if (classList.contains('unmarked')) {
@@ -8,8 +11,9 @@ const domInteraction = (() => {
       const row = classList.contains('top') ? 0 : classList.contains('bottom') ? 2 : 1
       // prettier-ignore
       const col = classList.contains('left') ? 0 : classList.contains('right') ? 2 : 1
-      if (!board.placeMark({ row, col, token: currentPlayer })) {
-        if (nextPlayer !== null) players[nextPlayer].play()
+      if (!board.placeMark({ row, col })) {
+        console.log(currentPlayer)
+        players[1 - currentPlayer].play()
       }
     }
   }
@@ -25,21 +29,22 @@ const domInteraction = (() => {
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
         const div = getDiv(i, j)
-        div.classList.remove('winX')
-        div.classList.remove('winO')
+        div.classList.remove('win0')
+        div.classList.remove('win1')
         div.classList.remove('marked')
-        div.classList.add('unmarked')
+        div.classList.add('hoverless')
         div.textContent = ''
       }
     }
     board.clear()
-    firstPlayer = (firstPlayer === 'X') ? 'O' : 'X'
+    firstPlayer = 1 - firstPlayer
     players[firstPlayer].play()
   }
-  function displayMark (move) {
-    const div = getDiv(move.row, move.col)
-    div.textContent = move.token
+  function displayMark (row, col) {
+    const div = getDiv(row, col)
+    div.textContent = tokens[currentPlayer]
     div.classList.remove('unmarked')
+    div.classList.remove('hoverless')
     div.classList.add('marked')
   }
   function winRow (row) {
@@ -73,36 +78,58 @@ const domInteraction = (() => {
     })
   }
   function clickOn () {
+    // change all hoverless to unmarked
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const div = getDiv(i, j)
+        div.classList.replace('hoverless', 'unmarked')
+      }
+    }
     boardElement.addEventListener('click', clickListener)
   }
   function clickOff () {
+    // change all unmarked to hoverless
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        const div = getDiv(i, j)
+        div.classList.replace('unmarked', 'hoverless')
+      }
+    }
     boardElement.removeEventListener('click', clickListener)
   }
-  function showScore (name, score) {
-    if (name === 'PLAYER') {
-      const playerScore = document
-        .querySelector('.player')
-        .querySelector('.score')
-      playerScore.textContent = score
-    } else {
-      const computerScore = document
-        .querySelector('.computer')
-        .querySelector('.score')
-      computerScore.textContent = score
-    }
+  function showScore (playerNo, score) {
+    document
+      .querySelector(`.player${playerNo}`)
+      .querySelector('.score').textContent = score
   }
-  function reportWinner (token) {
+  function showName (playerNo, name) {
+    document
+      .querySelector(`.player${playerNo}`)
+      .querySelector('.name').textContent = name
+  }
+
+  function reportWinner (playerNo) {
+    showCurrentPlayer(null)
     const winDiv = document.querySelector('.winner')
     const nameDiv = winDiv.firstElementChild
-    if (token === null) {
+    if (playerNo === null) {
       nameDiv.textContent = 'NOBODY'
     } else {
-      nameDiv.textContent = players[token].name
+      nameDiv.textContent = `${players[playerNo].name} (${tokens[playerNo]})`
     }
     winDiv.classList.remove('hide')
     winDiv.classList.add('show')
     document.querySelector('.restart').addEventListener('click', restart)
   }
+  function showCurrentPlayer (playerNo) {
+    const div = document.querySelector('.player')
+    if (playerNo === null) {
+      div.textContent = ''
+    } else {
+      div.textContent = `Current Player: ${players[playerNo].name} (${tokens[playerNo]})`
+    }
+  }
+
   return {
     displayMark,
     winRow,
@@ -111,27 +138,26 @@ const domInteraction = (() => {
     winUpDiag,
     clickOn,
     showScore,
+    showName,
     reportWinner,
+    showCurrentPlayer,
     restart
   }
 })()
 
 const board = (() => {
-  const state = [
-    ['', '', ''],
-    ['', '', ''],
-    ['', '', '']
-  ]
+  const state = [[], [], []]
+  clear()
   function clear () {
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
-        state[i][j] = ''
+        state[i][j] = null
       }
     }
   }
   function placeMark (move) {
-    state[move.row][move.col] = move.token
-    domInteraction.displayMark(move)
+    state[move.row][move.col] = currentPlayer
+    domInteraction.displayMark(move.row, move.col)
     let gameWon = false
     if (winsRow(move)) {
       gameWon = true
@@ -150,63 +176,62 @@ const board = (() => {
       domInteraction.winUpDiag()
     }
     if (gameWon) {
-      players[move.token].win()
-      domInteraction.reportWinner(move.token)
+      domInteraction.reportWinner(currentPlayer)
+      players[currentPlayer].win()
       return true
     }
     if (state.join().length === 17) {
-      nextPlayer = null
       domInteraction.reportWinner(null)
       return true
     }
     return false
   }
 
-  function winsCol (move) {
+  function winsCol (move, playerNo = currentPlayer) {
     for (let i = 0; i < 3; i++) {
-      if (i !== move.row && state[i][move.col] !== move.token) {
+      if (i !== move.row && state[i][move.col] !== playerNo) {
         return false
       }
     }
     return true
   }
-  function winsRow (move) {
+  function winsRow (move, playerNo = currentPlayer) {
     for (let i = 0; i < 3; i++) {
-      if (i !== move.col && state[move.row][i] !== move.token) {
+      if (i !== move.col && state[move.row][i] !== playerNo) {
         return false
       }
     }
     return true
   }
-  function winsDownDiag (move) {
+  function winsDownDiag (move, playerNo = currentPlayer) {
     if (move.row !== move.col) return false
     for (let i = 0; i < 3; i++) {
-      if (i !== move.row && state[i][i] !== move.token) {
+      if (i !== move.row && state[i][i] !== playerNo) {
         return false
       }
     }
     return true
   }
-  function winsUpDiag (move) {
+  function winsUpDiag (move, playerNo = currentPlayer) {
     if (move.row + move.col !== 2) return false
     for (let i = 0; i < 3; i++) {
-      if (i !== move.row && state[i][2 - i] !== move.token) {
+      if (i !== move.row && state[i][2 - i] !== playerNo) {
         return false
       }
     }
     return true
   }
-  function isWinningMove (move) {
+  function isWinningMove (move, playerNo) {
     return (
-      winsRow(move) || winsCol(move) || winsDownDiag(move) || winsUpDiag(move)
+      winsRow(move, playerNo) || winsCol(move, playerNo) || winsDownDiag(move, playerNo) || winsUpDiag(move, playerNo)
     )
   }
-  function findWinningMove (token) {
+  function findWinningMove (playerNo = currentPlayer) {
     const winningMoves = []
     for (let row = 0; row < 3; row++) {
       for (let col = 0; col < 3; col++) {
-        if (state[row][col] === '' && isWinningMove({ row, col, token })) {
-          winningMoves.push({ row, col, token })
+        if (state[row][col] === null && isWinningMove({ row, col }, playerNo)) {
+          winningMoves.push({ row, col })
         }
       }
     }
@@ -215,14 +240,11 @@ const board = (() => {
     }
     return winningMoves[Math.floor(Math.random() * winningMoves.length)]
   }
-  function bestMove (forToken, againstToken) {
-    let nextMove = findWinningMove(forToken)
+  function bestMove () {
+    let nextMove = findWinningMove()
 
     if (nextMove === null) {
-      nextMove = findWinningMove(againstToken)
-      if (nextMove !== null) {
-        nextMove.token = forToken
-      }
+      nextMove = findWinningMove(1 - currentPlayer)
     }
 
     if (nextMove === null) {
@@ -231,8 +253,8 @@ const board = (() => {
       do {
         row = Math.floor(Math.random() * 3)
         col = Math.floor(Math.random() * 3)
-      } while (state[row][col] !== '')
-      nextMove = { row, col, token: forToken }
+      } while (state[row][col] !== null)
+      nextMove = { row, col }
     }
     return nextMove
   }
@@ -243,41 +265,39 @@ const board = (() => {
   })
 })()
 
-function player (name, token, enemyToken) {
+function player (playerNo, name) {
+  domInteraction.showName(playerNo, name)
   let score = 0
   function win () {
-    nextPlayer = null
+    currentPlayer = null
     score++
-    domInteraction.showScore(name, score)
+    domInteraction.showScore(playerNo, score)
   }
   function autoMove () {
-    board.placeMark(board.bestMove(token, enemyToken))
-    console.log()
-    if (nextPlayer !== null) players[nextPlayer].play()
+    board.placeMark(board.bestMove())
+    if (currentPlayer !== null) {
+      players[1 - playerNo].play()
+    }
   }
   function play () {
-    currentPlayer = token
-    nextPlayer = enemyToken
+    currentPlayer = playerNo
+    domInteraction.showCurrentPlayer(currentPlayer)
     if (name === 'COMPUTER') {
-      autoMove()
+      setTimeout(function () { autoMove() }, 1000)
     } else {
       domInteraction.clickOn()
     }
   }
   return Object.assign({
     play,
-    token,
+    playerNo,
     win,
-    name,
-    autoMove
+    name
   })
 }
 
-const players = {
-  X: player('PLAYER', 'X', 'O'),
-  O: player('COMPUTER', 'O', 'X')
-}
-let nextPlayer
+const players = [player(0, 'PLAYER'), player(1, 'COMPUTER')]
+
 let currentPlayer
-let firstPlayer = (Math.random < 0.5) ? 'X' : 'O'
+let firstPlayer = Math.floor(Math.random() * 2)
 players[firstPlayer].play()
