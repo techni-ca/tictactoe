@@ -1,8 +1,59 @@
 const domInteraction = (() => {
   const boardElement = document.querySelector('.board')
   const tokens = ['X', 'O']
-  document.querySelector('.player0').querySelector('.token').textContent = tokens[0]
-  document.querySelector('.player1').querySelector('.token').textContent = tokens[1]
+  document.querySelector('.player0').querySelector('.token').textContent =
+    tokens[0]
+  document.querySelector('.player1').querySelector('.token').textContent =
+    tokens[1]
+  document.querySelectorAll('.token').forEach(query => {
+    query.addEventListener('click', e => {
+      tokenClick(e)
+    })
+  })
+  document.querySelectorAll('.name').forEach(query => {
+    query.addEventListener('click', e => {
+      nameClick(e)
+    })
+  })
+  function tokenClick (event) {
+    const tokenIndex = event.target.parentElement.className.slice(-1)
+    const oldToken = tokens[tokenIndex]
+    const newToken = prompt('Change mark to what?', oldToken)
+    if (
+      newToken === null ||
+      newToken.length !== 1 ||
+      tokens.includes(newToken) ||
+      newToken === ' '
+    ) {
+      return
+    }
+    tokens[tokenIndex] = newToken
+    document
+      .querySelector(`.player${tokenIndex}`)
+      .querySelector('.token').textContent = newToken
+    document.querySelectorAll('.marked').forEach(square => {
+      if (square.textContent === oldToken) square.textContent = newToken
+    })
+    showCurrentPlayer(currentPlayer)
+  }
+  function nameClick (event) {
+    const playerNo = event.target.parentElement.className.slice(-1)
+    const oldName = players[playerNo].getName()
+    const newName = prompt('Change name to what?', oldName)
+    if (
+      newName === null ||
+      newName.length < 1 ||
+      newName.length > 8
+    ) {
+      return
+    }
+    players[playerNo].setName(newName)
+    document
+      .querySelector(`.player${playerNo}`)
+      .querySelector('.name').textContent = newName
+    clickOff()
+    players[currentPlayer].play()
+  }
   function clickListener (event) {
     const classList = event.target.classList
     if (classList.contains('unmarked')) {
@@ -12,7 +63,6 @@ const domInteraction = (() => {
       // prettier-ignore
       const col = classList.contains('left') ? 0 : classList.contains('right') ? 2 : 1
       if (!board.placeMark({ row, col })) {
-        console.log(currentPlayer)
         players[1 - currentPlayer].play()
       }
     }
@@ -115,7 +165,7 @@ const domInteraction = (() => {
     if (playerNo === null) {
       nameDiv.textContent = 'NOBODY'
     } else {
-      nameDiv.textContent = `${players[playerNo].name} (${tokens[playerNo]})`
+      nameDiv.textContent = `${players[playerNo].getName()} (${tokens[playerNo]})`
     }
     winDiv.classList.remove('hide')
     winDiv.classList.add('show')
@@ -126,7 +176,7 @@ const domInteraction = (() => {
     if (playerNo === null) {
       div.textContent = ''
     } else {
-      div.textContent = `Current Player: ${players[playerNo].name} (${tokens[playerNo]})`
+      div.textContent = `Current Player: ${players[playerNo].getName()} (${tokens[playerNo]})`
     }
   }
 
@@ -181,6 +231,7 @@ const board = (() => {
       return true
     }
     if (state.join().length === 17) {
+      currentPlayer = null
       domInteraction.reportWinner(null)
       return true
     }
@@ -223,7 +274,10 @@ const board = (() => {
   }
   function isWinningMove (move, playerNo) {
     return (
-      winsRow(move, playerNo) || winsCol(move, playerNo) || winsDownDiag(move, playerNo) || winsUpDiag(move, playerNo)
+      winsRow(move, playerNo) ||
+      winsCol(move, playerNo) ||
+      winsDownDiag(move, playerNo) ||
+      winsUpDiag(move, playerNo)
     )
   }
   function findWinningMove (playerNo = currentPlayer) {
@@ -266,12 +320,18 @@ const board = (() => {
 })()
 
 function player (playerNo, name) {
-  domInteraction.showName(playerNo, name)
   let score = 0
+  domInteraction.showName(playerNo, name)
   function win () {
     currentPlayer = null
     score++
     domInteraction.showScore(playerNo, score)
+  }
+  function setName (newName) {
+    name = newName
+  }
+  function getName () {
+    return name
   }
   function autoMove () {
     board.placeMark(board.bestMove())
@@ -281,9 +341,11 @@ function player (playerNo, name) {
   }
   function play () {
     currentPlayer = playerNo
-    domInteraction.showCurrentPlayer(currentPlayer)
+    domInteraction.showCurrentPlayer(playerNo)
     if (name === 'COMPUTER') {
-      setTimeout(function () { autoMove() }, 1000)
+      setTimeout(function () {
+        autoMove()
+      }, 1000)
     } else {
       domInteraction.clickOn()
     }
@@ -292,7 +354,8 @@ function player (playerNo, name) {
     play,
     playerNo,
     win,
-    name
+    getName,
+    setName
   })
 }
 
