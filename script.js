@@ -38,7 +38,7 @@ const domInteraction = (() => {
   }
   function nameClick (event) {
     const playerNo = event.target.parentElement.className.slice(-1)
-    const oldName = players[playerNo].getName()
+    const oldName = players[playerNo].name
     const newName = prompt('Change name to what?', oldName)
     if (
       newName === null ||
@@ -47,7 +47,7 @@ const domInteraction = (() => {
     ) {
       return
     }
-    players[playerNo].setName(newName)
+    players[playerNo].name = newName
     document
       .querySelector(`.player${playerNo}`)
       .querySelector('.name').textContent = newName
@@ -165,7 +165,7 @@ const domInteraction = (() => {
     if (playerNo === null) {
       nameDiv.textContent = 'NOBODY'
     } else {
-      nameDiv.textContent = `${players[playerNo].getName()} (${tokens[playerNo]})`
+      nameDiv.textContent = `${players[playerNo].name} (${tokens[playerNo]})`
     }
     winDiv.classList.remove('hide')
     winDiv.classList.add('show')
@@ -176,7 +176,7 @@ const domInteraction = (() => {
     if (playerNo === null) {
       div.textContent = ''
     } else {
-      div.textContent = `Current Player: ${players[playerNo].getName()} (${tokens[playerNo]})`
+      div.textContent = `Current Player: ${players[playerNo].name} (${tokens[playerNo]})`
     }
   }
 
@@ -327,12 +327,6 @@ function player (playerNo, name) {
     score++
     domInteraction.showScore(playerNo, score)
   }
-  function setName (newName) {
-    name = newName
-  }
-  function getName () {
-    return name
-  }
   function autoMove () {
     board.placeMark(board.bestMove())
     if (currentPlayer !== null) {
@@ -342,7 +336,7 @@ function player (playerNo, name) {
   function play () {
     currentPlayer = playerNo
     domInteraction.showCurrentPlayer(playerNo)
-    if (name === 'COMPUTER') {
+    if (this.name === 'COMPUTER') {
       setTimeout(function () {
         autoMove()
       }, 1000)
@@ -350,13 +344,12 @@ function player (playerNo, name) {
       domInteraction.clickOn()
     }
   }
-  return Object.assign({
+  return {
     play,
     playerNo,
     win,
-    getName,
-    setName
-  })
+    name
+  }
 }
 
 const players = [player(0, 'PLAYER'), player(1, 'COMPUTER')]
